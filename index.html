@@ -4,12 +4,15 @@
 <meta charset="UTF-8">
 <title>ア ジェネレーター</title>
 <style>
-@font-face{
-    font-family:"Hangyaku";
-    src:url("Hangyaku.ttf");
+/* Load Hangyaku font with format for maximum compatibility */
+@font-face {
+    font-family: "Hangyaku";
+    src: url("Hangyaku.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
 }
 
-body{
+body {
     margin:0;
     font-family:sans-serif;
     display:flex;
@@ -19,14 +22,15 @@ body{
     background:#f0f0f0;
 }
 
-/* fixed canvas size */
-#canvas-wrapper{
+/* Outer wrapper allows responsive scaling */
+#canvas-wrapper {
     width:100%;
     max-width:680px;
     transform-origin: top left;
 }
 
-#canvas{
+/* Fixed design canvas */
+#canvas {
     width:680px;
     height:680px;
     background-color:#e1ccad;
@@ -35,7 +39,8 @@ body{
     margin-bottom:20px;
 }
 
-#text{
+/* Character text with fixed design parameters */
+#text {
     position:absolute;
     font-family:"Hangyaku";
     color:#9d3132;
@@ -48,19 +53,20 @@ body{
     pointer-events:none;
 }
 
-.controls{
+.controls {
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:10px;
 }
 
-input{
+input {
     font-size:20px;
     width:200px;
     text-align:center;
 }
-button{
+
+button {
     font-size:18px;
     padding:6px 12px;
 }
@@ -91,7 +97,16 @@ const downloadBtn = document.getElementById("downloadBtn");
 const filenameInput = document.getElementById("filenameInput");
 const canvasWrapper = document.getElementById("canvas-wrapper");
 
-// Only allow one character
+// Fixed design parameters
+const DESIGN_WIDTH = 680;
+const DESIGN_HEIGHT = 680;
+const DESIGN_X = 343;
+const DESIGN_Y = 342;
+const FONT_SIZE = 750;
+const SCALE_X = 1.45;
+const SCALE_Y = 1;
+
+// Update character text
 charInput.addEventListener("input", ()=>{
     if(charInput.value.length > 1){
         charInput.value = charInput.value.charAt(0);
@@ -99,38 +114,38 @@ charInput.addEventListener("input", ()=>{
     text.textContent = charInput.value;
 });
 
-// Optional: scale wrapper on small screens
-function resizeCanvasWrapper(){
-    const maxWidth = window.innerWidth - 20; // 10px padding each side
-    const scale = Math.min(maxWidth / 680, 1);
+// Scale wrapper for small screens, keep canvas & text fixed
+function resizeCanvasWrapper() {
+    const maxWidth = window.innerWidth - 20; // account for padding
+    const scale = Math.min(maxWidth / DESIGN_WIDTH, 1);
     canvasWrapper.style.transform = `scale(${scale})`;
 }
 window.addEventListener("resize", resizeCanvasWrapper);
 resizeCanvasWrapper();
 
-// Download function (always 680x680 JPG)
+// Download as 680x680 JPG
 downloadBtn.addEventListener("click", ()=>{
     const canvasEl = document.createElement("canvas");
-    canvasEl.width = 680;
-    canvasEl.height = 680;
+    canvasEl.width = DESIGN_WIDTH;
+    canvasEl.height = DESIGN_HEIGHT;
     const ctx = canvasEl.getContext("2d");
 
-    // background
+    // Draw background
     ctx.fillStyle = "#e1ccad";
-    ctx.fillRect(0,0,680,680);
+    ctx.fillRect(0,0,DESIGN_WIDTH,DESIGN_HEIGHT);
 
-    // text
+    // Draw text
     ctx.fillStyle = "#9d3132";
-    ctx.font = "750px Hangyaku";
+    ctx.font = `${FONT_SIZE}px Hangyaku`;
     ctx.save();
-    ctx.translate(343, 342);
-    ctx.scale(1.45,1);
+    ctx.translate(DESIGN_X, DESIGN_Y);
+    ctx.scale(SCALE_X, SCALE_Y);
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
     ctx.fillText(charInput.value,0,0);
     ctx.restore();
 
-    // determine filename
+    // Determine filename
     let filename = filenameInput.value.trim();
     if(!filename) filename = charInput.value || "character";
 
