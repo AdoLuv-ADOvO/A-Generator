@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <title>ア ジェネレーター</title>
 <style>
-/* Load Hangyaku font with format for maximum compatibility */
+/* WebFont for maximum compatibility */
 @font-face {
     font-family: "Hangyaku";
-    src: url("Hangyaku.ttf") format("truetype");
+    src: url("Hangyaku.woff2") format("woff2"),
+         url("Hangyaku.woff") format("woff");
     font-weight: normal;
     font-style: normal;
 }
@@ -106,7 +107,7 @@ const FONT_SIZE = 750;
 const SCALE_X = 1.45;
 const SCALE_Y = 1;
 
-// Update character text
+// Only allow one character
 charInput.addEventListener("input", ()=>{
     if(charInput.value.length > 1){
         charInput.value = charInput.value.charAt(0);
