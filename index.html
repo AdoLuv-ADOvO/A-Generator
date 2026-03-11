@@ -15,14 +15,21 @@ body{
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding:20px;
+    padding:10px;
     background:#f0f0f0;
+}
+
+/* fixed canvas size */
+#canvas-wrapper{
+    width:100%;
+    max-width:680px;
+    transform-origin: top left;
 }
 
 #canvas{
     width:680px;
     height:680px;
-    background-color:#e1ccad; /* canvas background color */
+    background-color:#e1ccad;
     position:relative;
     border:1px solid #ccc;
     margin-bottom:20px;
@@ -31,11 +38,11 @@ body{
 #text{
     position:absolute;
     font-family:"Hangyaku";
-    color:#9d3132; /* text color */
-    font-size:750px; /* fixed font size */
-    transform: translate(-50%, -50%) scale(1.45,1); /* fixed scale */
-    left:343px; /* fixed X position */
-    top:342px;  /* fixed Y position */
+    color:#9d3132;
+    font-size:750px;
+    left:343px;
+    top:342px;
+    transform: translate(-50%, -50%) scale(1.45,1);
     white-space:nowrap;
     user-select:none;
     pointer-events:none;
@@ -49,20 +56,22 @@ body{
 }
 
 input{
-    font-size:24px;
+    font-size:20px;
     width:200px;
     text-align:center;
 }
 button{
-    font-size:20px;
+    font-size:18px;
     padding:6px 12px;
 }
 </style>
 </head>
 <body>
 
-<div id="canvas">
-<div id="text">ア</div>
+<div id="canvas-wrapper">
+    <div id="canvas">
+        <div id="text">ア</div>
+    </div>
 </div>
 
 <div class="controls">
@@ -80,6 +89,7 @@ const charInput = document.getElementById("charInput");
 const text = document.getElementById("text");
 const downloadBtn = document.getElementById("downloadBtn");
 const filenameInput = document.getElementById("filenameInput");
+const canvasWrapper = document.getElementById("canvas-wrapper");
 
 // Only allow one character
 charInput.addEventListener("input", ()=>{
@@ -89,36 +99,44 @@ charInput.addEventListener("input", ()=>{
     text.textContent = charInput.value;
 });
 
+// Optional: scale wrapper on small screens
+function resizeCanvasWrapper(){
+    const maxWidth = window.innerWidth - 20; // 10px padding each side
+    const scale = Math.min(maxWidth / 680, 1);
+    canvasWrapper.style.transform = `scale(${scale})`;
+}
+window.addEventListener("resize", resizeCanvasWrapper);
+resizeCanvasWrapper();
+
+// Download function (always 680x680 JPG)
 downloadBtn.addEventListener("click", ()=>{
     const canvasEl = document.createElement("canvas");
     canvasEl.width = 680;
     canvasEl.height = 680;
     const ctx = canvasEl.getContext("2d");
 
-    // Draw background
+    // background
     ctx.fillStyle = "#e1ccad";
     ctx.fillRect(0,0,680,680);
 
-    // Draw text
+    // text
     ctx.fillStyle = "#9d3132";
     ctx.font = "750px Hangyaku";
-
     ctx.save();
-    ctx.translate(343, 342); // fixed X/Y
-    ctx.scale(1.45,1);       // fixed scale
+    ctx.translate(343, 342);
+    ctx.scale(1.45,1);
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
-    ctx.fillText(charInput.value, 0, 0);
+    ctx.fillText(charInput.value,0,0);
     ctx.restore();
 
-    // Determine filename
+    // determine filename
     let filename = filenameInput.value.trim();
     if(!filename) filename = charInput.value || "character";
 
-    // Download as JPG
     const link = document.createElement("a");
     link.download = filename + ".jpg";
-    link.href = canvasEl.toDataURL("image/jpeg", 1.0);
+    link.href = canvasEl.toDataURL("image/jpeg",1.0);
     link.click();
 });
 </script>
