@@ -208,18 +208,36 @@
       let fontPercent = 100;
       let yOffset = 0;
 
-      // Only allow one character
+      let isComposing = false;
+
+      // IME support
+      charInput.addEventListener("compositionstart", () => {
+        isComposing = true;
+      });
+
+      charInput.addEventListener("compositionend", () => {
+        isComposing = false;
+        updateChar();
+      });
+
       charInput.addEventListener("input", () => {
-        const first = charInput.value.charAt(0);
+        if (!isComposing) updateChar();
+      });
+
+      function updateChar() {
+        const first = [...charInput.value][0] || "";
         charInput.value = first;
         text.textContent = first;
-      });
+      }
 
       // Update text
       function updateText() {
         const fontSize = DEFAULT_FONT_SIZE * (fontPercent / 100);
+        const char = charInput.value || " ";
+
         text.style.fontSize = fontSize + "px";
         text.style.top = DESIGN_Y + yOffset + "px";
+
         fontPercentLabel.textContent = Math.round(fontPercent) + "%";
         yValueLabel.textContent = yOffset;
       }
@@ -269,8 +287,8 @@
         return name.replace(/[\/\\?%*:|"<>]/g, "_");
       }
 
-      // Download as 680x680 JPG
-      downloadBtn.onclick = () => {
+      // Render canvas
+      function renderCanvas() {
         const canvas = document.createElement("canvas");
         canvas.width = DESIGN_WIDTH;
         canvas.height = DESIGN_HEIGHT;
@@ -283,17 +301,23 @@
         // Draw text
         ctx.fillStyle = "#af3738";
         const fontSize = DEFAULT_FONT_SIZE * (fontPercent / 100);
+        const char = charInput.value || " ";
         ctx.font = `${fontSize}px Hangyaku`;
         ctx.save();
         ctx.translate(DESIGN_X, DESIGN_Y + yOffset);
         ctx.scale(DEFAULT_SCALE_X, 1);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.textAlign = "center";
-        ctx.fillText(charInput.value, 0, 0);
+        ctx.fillText(char, 0, 0);
         ctx.restore();
 
-        // Determine filename
+        return canvas;
+      }
+
+      // Download
+      downloadBtn.onclick = () => {
+        const canvas = renderCanvas();
+
         let filename = filenameInput.value.trim();
         if (!filename) filename = charInput.value || "character";
         filename = sanitizeFilename(filename);
@@ -302,6 +326,22 @@
         link.download = filename + ".jpg";
         link.href = canvas.toDataURL("image/jpeg", 1.0);
         link.click();
+      };
+
+      // Copy image
+      const copyBtn = document.createElement("button");
+      copyBtn.textContent = "Copy";
+      copyBtn.style.width = "140px";
+      copyBtn.style.height = "40px";
+      downloadBtn.after(copyBtn);
+
+      copyBtn.onclick = async () => {
+        const canvas = renderCanvas();
+
+        canvas.toBlob(async (blob) => {
+          const item = new ClipboardItem({ "image/png": blob });
+          await navigator.clipboard.write([item]);
+        });
       };
 
       // Advanced toggle
