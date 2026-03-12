@@ -242,28 +242,47 @@
         yValueLabel.textContent = yOffset;
       }
 
-      // Font controls
-      fontPlus.onclick = () => {
-        fontPercent += 1;
-        updateText();
-      };
+      // Long-press helper
+      function makeHoldButton(button, stepFunction) {
+        let interval;
+        button.addEventListener("mousedown", () => {
+          stepFunction(); // immediate first step
+          interval = setInterval(stepFunction, 50);
+        });
+        document.addEventListener("mouseup", () => clearInterval(interval));
+        document.addEventListener("mouseleave", () => clearInterval(interval));
+        button.addEventListener(
+          "touchstart",
+          (e) => {
+            e.preventDefault();
+            stepFunction();
+            interval = setInterval(stepFunction, 50);
+          },
+          { passive: false },
+        );
+        button.addEventListener("touchend", () => clearInterval(interval));
+      }
 
-      fontMinus.onclick = () => {
-        fontPercent -= 1;
+      // Font controls
+      makeHoldButton(fontPlus, () => {
+        fontPercent++;
+        updateText();
+      });
+      makeHoldButton(fontMinus, () => {
+        fontPercent--;
         if (fontPercent < 1) fontPercent = 1;
         updateText();
-      };
+      });
 
       // Y controls
-      yUp.onclick = () => {
-        yOffset -= 1;
+      makeHoldButton(yUp, () => {
+        yOffset--;
         updateText();
-      };
-
-      yDown.onclick = () => {
-        yOffset += 1;
+      });
+      makeHoldButton(yDown, () => {
+        yOffset++;
         updateText();
-      };
+      });
 
       // Reset
       resetBtn.onclick = () => {
